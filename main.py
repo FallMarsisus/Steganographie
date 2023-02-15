@@ -1,24 +1,21 @@
-from PIL import Image
+from PIL import Image, ImageTk
 from urllib.request import urlopen
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.filedialog as fd
+import time
 
-imageFile = fd.askopenfilename(filetypes=(('Image File', '*.png'), ("Jpg file", "*.jpg"), ("Bmp file", "*.bmp")))
-secretImageFile = fd.askopenfilename(filetypes=(('Image File', '*.png'), ("Jpg file", "*.jpg"), ("Bmp file", "*.bmp")))
+"""imageFile = fd.askopenfile(filetypes=(('Png File', '*.png'), ("Jpg file", "*.jpg"), ("Bmp file", "*.bmp")))
+secretImageFile = fd.askopenfile(filetypes=(('Png File', '*.png'), ("Jpg file", "*.jpg"), ("Bmp file", "*.bmp")))"""
 
 imageURL = "https://www.radiofrance.fr/s3/cruiser-production/2022/06/5f6ac5ab-37d9-4ca6-8f79-3694fcfec071/560x315_paysage-monet.jpg"
 secretImageURL = r"https://www.tictactrip.eu/blog/wp-content/uploads/2020/07/Format-Blog-bannie%CC%80re-article-26-1-1160x652.png"
 
-imageSRC = "Capture d'écran_20230204_221251.png"
-secretImageSRC = "Capture d'écran_20230205_211753.png"
-
-image = Image.open(imageFile)
+image = Image.open(urlopen(imageURL))
 image = image.convert("RGB")
 
-imageTk = tk.PhotoImage(image)
 
-imageSecret = Image.open(secretImageFile)
+imageSecret = Image.open(urlopen(secretImageURL))
 maxSize = (image.width, image.height)
 imageSecret = imageSecret.resize(maxSize)
 imageSecret = imageSecret.convert("RGB")
@@ -30,8 +27,20 @@ window.title("Stéganographe")
 frame = tk.Frame(window)
 frame.pack()
 
-image1 = tk.Label(frame, image=imageTk)
-image1.pack()
+imageTk = ImageTk.PhotoImage(image)
+secretImageTk = ImageTk.PhotoImage(imageSecret)
+
+frameImages = tk.Frame(frame)
+frameImages.pack()
+
+image1 = tk.Label(frameImages, image=imageTk)
+image1.pack(side = 'left')
+
+textPlus = tk.Label(frameImages, text="+", font=('Calbri', 25))
+textPlus.pack(side= 'left')
+
+image2 = tk.Label(frameImages, image = secretImageTk)
+image2.pack(side = 'left')
 
 textLoading = tk.Label(frame, text='Patientez...', font=('Calibri', 12))
 textLoading.pack()
@@ -71,7 +80,14 @@ def modifImage():
             newPixel = tuple(newPixel)
 
             image.putpixel((i,j), newPixel)
-    image.show()
+    imageFinalTk = ImageTk.PhotoImage(image)
+    progressbar.pack_forget()
+    textLoading.pack_forget()
+    textFinal = tk.Label(frameImages, text='=>', font=("Calibri", 15))
+    imageFinal = tk.Label(frameImages, image=imageFinalTk)
+    textFinal.pack(side = "left")
+    imageFinal.pack(side = 'left')
+    
 
     # On décode
 
@@ -98,7 +114,6 @@ def modifImage():
             newPixel = tuple(newPixel)
 
             image.putpixel((i,j), newPixel)
-    image.show()
 
 modifImage()
 window.mainloop()
