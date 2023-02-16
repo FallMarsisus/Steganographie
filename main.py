@@ -3,6 +3,7 @@ from urllib.request import urlopen
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.filedialog as fd
+import tkinter.messagebox as mb
 import time
 
 """imageFile = fd.askopenfile(filetypes=(('Png File', '*.png'), ("Jpg file", "*.jpg"), ("Bmp file", "*.bmp")))
@@ -74,14 +75,19 @@ def encode():
                 colorBin = bin(pixel[k])
                 secretColorBin = bin(pixelSecret[k])
                 finalColorBin = ''
-                while len(colorBin) <= 6:
+                # On ajoute des 0 à la fin des binaires afin d'en faire des chaines suffisament longues pour être combinées.
+                while len(colorBin) < 10:
                     colorBin += '0'
-                for l in range(len(colorBin)):
-                    if l<=7:
+                while len(secretColorBin) < 7:
+                    secretColorBin += '0'
+                
+                
+                # On mélange les deux images
+                for l in range(10): # Longueur d'un bit de données
+                    if l<7:
                         finalColorBin += colorBin[l]
-                    if l>=8 and len(secretColorBin)>l-6:
-                        finalColorBin += secretColorBin[l-6]
-                    elif l>=8: finalColorBin+= "0"
+                    if l>6:
+                        finalColorBin += secretColorBin[l-5]
 
                 finalColorBin = int(finalColorBin, 2)
                 newPixel.append(finalColorBin)
@@ -122,6 +128,13 @@ def decode():
             image.putpixel((i,j), newPixel)
     image.show("Image décodée.png")
 
+def save():
+    pathSave = fd.asksaveasfilename(filetypes=(("BMP Image File", '*.bmp'),))
+    if pathSave[-4:-1] != ".bmp" : pathSave+= ".bmp"
+    image.save(pathSave, format='bmp')
+    mb.showinfo("Sauvegarde Réussie", "Vous avez bien sauvegardé le ficher à l'adresse spécifiée.")
+
+
 encode()
 
 
@@ -130,6 +143,11 @@ progressbar.pack_forget()
 textLoading.pack_forget()
 imageFinal = tk.Label(frameLoading, image=imageFinalTk)
 imageFinal.pack(side = 'left')
-buttonDecode= tk.Button(frame, text='Décoder', command=decode, font=("Calibri", 15))
-buttonDecode.pack(pady=10)
+frameButtons = tk.Frame(frame)
+frameButtons.pack()
+buttonDecode= tk.Button(frameButtons, text='Décoder', command=decode, font=("Calibri", 15))
+buttonDecode.pack(pady=10, side=tk.LEFT)
+buttonSave = tk.Button(frameButtons, text="Sauvegarder", command=save, font=('Calibri Bold', 15))
+buttonSave.pack(side=tk.LEFT, padx=5)
+
 window.mainloop()
