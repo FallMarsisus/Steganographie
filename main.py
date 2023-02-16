@@ -76,9 +76,14 @@ def encode():
                 secretColorBin = bin(pixelSecret[k])
                 finalColorBin = ''
                 # On ajoute des 0 à la fin des binaires afin d'en faire des chaines suffisament longues pour être combinées.
-                while len(colorBin) < 10:
-                    colorBin += '0'
-                while len(secretColorBin) < 7:
+
+                # PROGRAMME NON FONCTIONNEL SANS RePARATION DE CES LIGNES
+                """ while len(colorBin) < 7:
+                    colorBin += '0 """
+                """if len(colorBin)<7:
+                    newPixel.append(pixel[k])
+                    continue"""
+                while len(secretColorBin) < 5:
                     secretColorBin += '0'
                 
                 
