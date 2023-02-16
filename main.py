@@ -9,11 +9,13 @@ import time
 secretImageFile = fd.askopenfile(filetypes=(('Png File', '*.png'), ("Jpg file", "*.jpg"), ("Bmp file", "*.bmp")))"""
 
 imageURL = "https://www.radiofrance.fr/s3/cruiser-production/2022/06/5f6ac5ab-37d9-4ca6-8f79-3694fcfec071/560x315_paysage-monet.jpg"
-secretImageURL = r"https://www.tictactrip.eu/blog/wp-content/uploads/2020/07/Format-Blog-bannie%CC%80re-article-26-1-1160x652.png"
+secretImageURL = r"https://media.lesechos.com/api/v1/images/view/6203b47f8fe56f43fc4f5a66/1280x720/070889361477-web-tete.jpg"
 
 image = Image.open(urlopen(imageURL))
 image = image.convert("RGB")
 
+if image.width >= 500:
+    image.thumbnail((500,500))
 
 imageSecret = Image.open(urlopen(secretImageURL))
 maxSize = (image.width, image.height)
@@ -25,7 +27,7 @@ window = tk.Tk()
 window.title("Stéganographe")
 
 frame = tk.Frame(window)
-frame.pack()
+frame.pack(expand=tk.TRUE)
 
 imageTk = ImageTk.PhotoImage(image)
 secretImageTk = ImageTk.PhotoImage(imageSecret)
@@ -42,15 +44,22 @@ textPlus.pack(side= 'left')
 image2 = tk.Label(frameImages, image = secretImageTk)
 image2.pack(side = 'left')
 
-textLoading = tk.Label(frame, text='Patientez...', font=('Calibri', 12))
+textFinal = tk.Label(frameImages, text='=>', font=("Calibri", 25))
+textFinal.pack(side = "left")
+
+frameLoading = tk.Frame(frameImages, width=image.width, border=10)
+frameLoading.pack(side="right", fill=tk.X)
+
+textLoading = tk.Label(frameLoading, text='Patientez...', font=('Calibri', 12), width=image.width)
 textLoading.pack()
 
-progressbar = ttk.Progressbar(frame, length=100, mode='determinate')
-progressbar.pack()
+progressbar = ttk.Progressbar(frameLoading, length=100, mode='determinate')
+progressbar.pack(fill=tk.X)
 
 
-    # On encode
-def modifImage():
+
+# On encode
+def encode():
     for i in range(image.width):
         if round(i/image.width*100) - round(i-1/image.width*100)!=0:
             progressbar["value"] = round(i/image.width*100)
@@ -72,6 +81,7 @@ def modifImage():
                         finalColorBin += colorBin[l]
                     if l>=8 and len(secretColorBin)>l-6:
                         finalColorBin += secretColorBin[l-6]
+                    elif l>=8: finalColorBin+= "0"
 
                 finalColorBin = int(finalColorBin, 2)
                 newPixel.append(finalColorBin)
@@ -80,17 +90,12 @@ def modifImage():
             newPixel = tuple(newPixel)
 
             image.putpixel((i,j), newPixel)
-    imageFinalTk = ImageTk.PhotoImage(image)
-    progressbar.pack_forget()
-    textLoading.pack_forget()
-    textFinal = tk.Label(frameImages, text='=>', font=("Calibri", 15))
-    imageFinal = tk.Label(frameImages, image=imageFinalTk)
-    textFinal.pack(side = "left")
-    imageFinal.pack(side = 'left')
+
+
     
 
     # On décode
-
+def decode():
     for i in range(image.width):
         for j in range(image.height):
             pixel = image.getpixel((i, j))
@@ -99,14 +104,15 @@ def modifImage():
 
             for k in range(len(pixel)):
                 secretColorBin = bin(pixel[k])
-                finalColorBin = ""
+                finalColorBin = "0b"
 
                 for l in range(len(secretColorBin)):
-                    if l>=len(secretColorBin) - 4  and l>1:
+                    if l>=len(secretColorBin) - 4>=6:
                         finalColorBin += secretColorBin[l]
 
-                while len(finalColorBin)<8:
+                while len(finalColorBin)<10:
                     finalColorBin+='0'
+
 
                 finalColorBin = int(finalColorBin, 2)
                 newPixel.append(finalColorBin)
@@ -114,6 +120,16 @@ def modifImage():
             newPixel = tuple(newPixel)
 
             image.putpixel((i,j), newPixel)
+    image.show("Image décodée.png")
 
-modifImage()
+encode()
+
+
+imageFinalTk = ImageTk.PhotoImage(image)
+progressbar.pack_forget()
+textLoading.pack_forget()
+imageFinal = tk.Label(frameLoading, image=imageFinalTk)
+imageFinal.pack(side = 'left')
+buttonDecode= tk.Button(frame, text='Décoder', command=decode, font=("Calibri", 15))
+buttonDecode.pack(pady=10)
 window.mainloop()
